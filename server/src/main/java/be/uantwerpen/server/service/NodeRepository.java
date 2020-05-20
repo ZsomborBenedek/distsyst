@@ -6,10 +6,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -82,44 +78,5 @@ public class NodeRepository {
             e.printStackTrace();
             System.out.println("Exception occurred reading the files!");
         }
-    }
-
-    public String getFileOwnerIp(String fileName) {
-        int hfn = hash(fileName, false);
-
-        System.out.println("itt keressuk a file ipját");
-        Integer min = Collections.min(this.nodes.keySet());
-        if (hfn < min) {
-            int ownerName = Collections.max(this.nodes.keySet());
-            return this.nodes.get(ownerName);
-        }
-
-        String ownerIp = null;
-        int minDiff = Integer.MAX_VALUE;
-        for (Integer name : this.nodes.keySet()) {
-            String ip = this.nodes.get(name);
-            int diff = Math.abs(name-hfn);
-            if (diff < minDiff) {
-                minDiff = diff;
-                ownerIp = ip;
-            }
-        }
-        return ownerIp;
-    }
-
-    private int hash(String name, boolean node) {
-        int hash = 0;
-        int temp = 0;
-        int i;
-        for (i = 0; i < name.length(); i++) {
-            hash = 3 * hash + name.charAt(i);
-            temp = temp + name.charAt(i);
-        }
-        hash = hash + temp;
-        if (node) {
-            System.out.println("node");
-        } else
-            hash = hash / 53;
-        return hash;
     }
 }
