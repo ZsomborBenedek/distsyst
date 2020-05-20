@@ -6,29 +6,29 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class NodeRepository {
 
-    private HashMap<Integer, String> nodes;
+    private ConcurrentHashMap<Integer, String> nodes;
 
     public NodeRepository() {
-        this.nodes = new HashMap<>();
+        this.nodes = new ConcurrentHashMap<>();
         read();
     }
 
-    public NodeRepository(HashMap<Integer, String> nodes) {
+    public NodeRepository(ConcurrentHashMap<Integer, String> nodes) {
         this.nodes = nodes;
     }
 
     /**
      * @return the nodes
      */
-    public HashMap<Integer, String> getNodes() {
+    public ConcurrentHashMap<Integer, String> getNodes() {
         read();
         return nodes;
     }
@@ -36,7 +36,7 @@ public class NodeRepository {
     /**
      * @param nodes the nodes to set
      */
-    public void setNodes(HashMap<Integer, String> nodes) {
+    public void setNodes(ConcurrentHashMap<Integer, String> nodes) {
         this.nodes = nodes;
         save();
     }
