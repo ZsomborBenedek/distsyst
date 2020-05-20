@@ -8,7 +8,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -71,12 +70,28 @@ public class NodeRepository {
             String line = "";
             while ((line = reader.readLine()) != null) {
                 if (!line.isEmpty())
-                    this.nodes.put(Integer.parseInt(line.split(":")[0]), line.split(":")[1]);
+                    this.nodes.put(hash(line.split(":")[0], true), line.split(":")[1]);
             }
             reader.close();
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("Exception occurred reading the files!");
         }
+    }
+
+    private int hash(String name, boolean node) {
+        int hash = 0;
+        int temp = 0;
+        int i;
+        for (i = 0; i < name.length(); i++) {
+            hash = 3 * hash + name.charAt(i);
+            temp = temp + name.charAt(i);
+        }
+        hash = hash + temp;
+        if (node) {
+            // System.out.println("--Node hashed--");
+        } else
+            hash = hash / 53;
+        return hash;
     }
 }
