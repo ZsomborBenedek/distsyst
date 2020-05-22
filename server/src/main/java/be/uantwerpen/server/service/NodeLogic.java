@@ -2,20 +2,32 @@ package be.uantwerpen.server.service;
 
 import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import be.uantwerpen.server.repository.NodeRepository;
 
 @Service
 public class NodeLogic {
 
+    @Autowired
     NodeRepository repository;
 
-    public NodeLogic(NodeRepository repository) {
-        this.repository = repository;
-        System.out.println();
-        System.out.println("Known nodes:");
-        System.out.println(this.repository.getNodes().toString());
-        System.out.println();
+    // UDP message: [type]::[name]::[ip]
+
+    public void addNode(String msg) {
+        System.out.println("Adding new node...");
+        
+        ConcurrentHashMap<Integer, String> nodes = this.repository.getNodes();
+        nodes.put(hash(msg.split("::")[1], true), msg.split("::")[2]);
+        this.repository.setNodes(nodes);
+    }
+    
+    public void deleteNode(String msg) {
+        System.out.println("Removing a node...");
+
+        ConcurrentHashMap<Integer, String> nodes = this.repository.getNodes();
+        nodes.remove(hash(msg.split("::")[1], true));
+        this.repository.setNodes(nodes);
     }
 
     public String getFileOwnerIp(String fileName) {
@@ -57,6 +69,6 @@ public class NodeLogic {
             // System.out.println("--Node hashed--");
         } else
             hash = hash / 53;
-        return hash;
+        return hash > 327680 || hash < 0 ? 327680 : hash;
     }
 }
