@@ -1,13 +1,15 @@
 package be.uantwerpen.server.service;
 
 import java.util.Collections;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.springframework.stereotype.Service;
 
 @Service
 public class NodeLogic {
 
     NodeRepository repository;
-    
+
     public NodeLogic(NodeRepository repository) {
         this.repository = repository;
         System.out.println();
@@ -18,22 +20,26 @@ public class NodeLogic {
 
     public String getFileOwnerIp(String fileName) {
         int hfn = hash(fileName, false);
-
-        Integer min = Collections.min(this.repository.getNodes().keySet());
-        if (hfn < min) {
-            int ownerName = Collections.max(this.repository.getNodes().keySet());
-            return this.repository.getNodes().get(ownerName);
-        }
+        System.out.println("Hashed file name: " + hfn);
 
         String ownerIp = null;
         int minDiff = Integer.MAX_VALUE;
         for (Integer name : this.repository.getNodes().keySet()) {
-            String ip = this.repository.getNodes().get(name);
-            int diff = Math.abs(name - hfn);
-            if (diff < minDiff) {
-                minDiff = diff;
-                ownerIp = ip;
+            // Check if hashed node name is smaller than hashed file name
+            if (name < hfn) {
+                int diff = Math.abs(name - hfn);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    ownerIp = this.repository.getNodes().get(name);
+                }
             }
+        }
+
+        // If no node has a hash smaller than the file name's hash (= every node has a
+        // bigger hash)
+        if (ownerIp == null) {
+            Integer name = Collections.max(this.repository.getNodes().keySet());
+            return this.repository.getNodes().get(name);
         }
         return ownerIp;
     }
@@ -48,7 +54,7 @@ public class NodeLogic {
         }
         hash = hash + temp;
         if (node) {
-            System.out.println("node");
+            // System.out.println("--Node hashed--");
         } else
             hash = hash / 53;
         return hash;
