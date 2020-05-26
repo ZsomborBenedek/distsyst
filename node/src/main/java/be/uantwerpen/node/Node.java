@@ -52,7 +52,7 @@ public class Node {
     @PostConstruct
     public void bootstrap() throws IOException, InterruptedException {
         multiCastService.sendUDPMessage(NEW_NODE_MESSAGE + "::" + ownName + "::" + ownIp, "230.0.0.0", 10000);
-        
+        System.out.println("\nBooting...");
         Menu menu = new Menu(this);
         new Thread(menu::run).start();
     }

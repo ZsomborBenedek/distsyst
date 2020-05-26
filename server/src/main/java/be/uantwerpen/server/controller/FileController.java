@@ -2,9 +2,6 @@ package be.uantwerpen.server.controller;
 
 import org.springframework.web.bind.annotation.RestController;
 import be.uantwerpen.server.service.ServerLogic;
-
-import java.io.IOException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.HttpStatus;

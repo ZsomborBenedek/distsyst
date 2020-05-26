@@ -15,7 +15,7 @@ public class ServerLogic {
     @Autowired
     TCPSender tpcSender;
 
-    public int addNode(String name, String ip) {
+    public int addNode(String name, String ip) throws InterruptedException {
         System.out.println("\nAdding new node...");
         System.out.println(name + "::" + ip);
 
@@ -29,6 +29,7 @@ public class ServerLogic {
         setHighestLowest(hName);
 
         // Sending node this name server's ip address
+        Thread.sleep(1000);
         tpcSender.post(ip, "setNameServer", this.repository.getOwnIp());
 
         return this.repository.getNodes().size();

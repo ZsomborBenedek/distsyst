@@ -26,7 +26,7 @@ public class ServerMultiCastService implements Runnable {
 
     // UDP message: [type]::[name]::[ip]
 
-    private void switcher(String msg) throws IOException {
+    private void switcher(String msg) throws IOException, InterruptedException {
         int nodeCount = 0;
         switch (msg.split("::")[0]) {
             case "newNode":
@@ -42,7 +42,7 @@ public class ServerMultiCastService implements Runnable {
         }
     }
 
-    private void listenForUDPMessage(String ip, int port) throws IOException {
+    private void listenForUDPMessage(String ip, int port) throws IOException, InterruptedException {
         byte[] buffer = new byte[4096];
         MulticastSocket socket = new MulticastSocket(port);
         InetAddress group = InetAddress.getByName(ip);
@@ -79,7 +79,7 @@ public class ServerMultiCastService implements Runnable {
     public void run() {
         try {
             listenForUDPMessage(this.udpIP, this.udpPort);
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             System.out.println(e.getMessage());
         }
     }
