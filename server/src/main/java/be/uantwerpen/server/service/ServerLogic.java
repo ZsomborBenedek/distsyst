@@ -7,27 +7,58 @@ import org.springframework.stereotype.Service;
 import be.uantwerpen.server.repository.NodeRepository;
 
 @Service
-public class NodeLogic {
+public class ServerLogic {
 
     @Autowired
     NodeRepository repository;
 
-    // UDP message: [type]::[name]::[ip]
+    @Autowired
+    TCPSender tpcSender;
 
-    public void addNode(String msg) {
-        System.out.println("Adding new node...");
-        
+    public int addNode(String name, String ip) {
+        System.out.println("\nAdding new node...");
+        System.out.println(name + "::" + ip);
+
+        int hName = hash(name, true);
+
+        // Adding node to database
         ConcurrentHashMap<Integer, String> nodes = this.repository.getNodes();
-        nodes.put(hash(msg.split("::")[1], true), msg.split("::")[2]);
+        nodes.put(hName, ip);
         this.repository.setNodes(nodes);
+
+        setHighestLowest(hName);
+
+        // Sending node this name server's ip address
+        tpcSender.post(ip, "setNameServer", this.repository.getOwnIp());
+
+        return this.repository.getNodes().size();
     }
-    
-    public void deleteNode(String msg) {
-        System.out.println("Removing a node...");
 
+    public int deleteNode(String name) {
+        System.out.println("\nRemoving a node...");
+        System.out.println(name);
+
+        int hName = hash(name, true);
+
+        // Removing node from database
         ConcurrentHashMap<Integer, String> nodes = this.repository.getNodes();
-        nodes.remove(hash(msg.split("::")[1], true));
+        nodes.remove(hName, true);
         this.repository.setNodes(nodes);
+
+        setHighestLowest(hName);
+
+        return this.repository.getNodes().size();
+    }
+
+    private void setHighestLowest(int hName) {
+        if (hName > this.repository.getHighestHashedName()) {
+            this.repository.setHighestHashedName(hName);
+            System.out.println("This is now the highest hashed node!");
+        }
+        if (hName < this.repository.getLowestHashedName()) {
+            this.repository.setLowestHashedName(hName);
+            System.out.println("This is now the lowest hashed node!");
+        }
     }
 
     public String getFileOwnerIp(String fileName) {
