@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Repository;
@@ -14,14 +16,29 @@ import org.springframework.stereotype.Repository;
 public class NodeRepository {
 
     private ConcurrentHashMap<Integer, String> nodes;
+    private int highestHashedName = 0;
+    private int lowestHashedName = Integer.MAX_VALUE;
 
-    public NodeRepository() {
-        this.nodes = new ConcurrentHashMap<>();
-        read();
+    private final InetAddress inetAddress = InetAddress.getLocalHost();
+    private final String ownName = inetAddress.getHostName();
+    private final String ownIp = inetAddress.getHostAddress();
+
+    public String getOwnName() {
+        return ownName;
     }
 
-    public NodeRepository(ConcurrentHashMap<Integer, String> nodes) {
+    public String getOwnIp() {
+        return ownIp;
+    }
+
+    public NodeRepository() throws UnknownHostException {
+        this.nodes = new ConcurrentHashMap<>();
+        clear();
+    }
+
+    public NodeRepository(ConcurrentHashMap<Integer, String> nodes) throws UnknownHostException {
         this.nodes = nodes;
+        save();
     }
 
     /**
@@ -40,18 +57,43 @@ public class NodeRepository {
         save();
     }
 
+    public int getHighestHashedName() {
+        return highestHashedName;
+    }
+
+    public void setHighestHashedName(int highestHashedName) {
+        this.highestHashedName = highestHashedName;
+    }
+
+    public int getLowestHashedName() {
+        return lowestHashedName;
+    }
+
+    public void setLowestHashedName(int lowestHashedName) {
+        this.lowestHashedName = lowestHashedName;
+    }
+
+    private void clear() {
+        try {
+            File nodes = new File("src/main/java/be/uantwerpen/server/database/nodes.txt");
+            if (nodes.exists() && nodes.isFile()) {
+                nodes.delete();
+            }
+            nodes.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Exception occurred making the files!");
+        }
+    }
+
     private void save() {
         try {
             File nodes = new File("src/main/java/be/uantwerpen/server/database/nodes.txt");
             BufferedWriter writer = new BufferedWriter(new FileWriter(nodes.getAbsolutePath(), false));
 
             for (Map.Entry<Integer, String> node : this.nodes.entrySet()) {
-                Integer name = node.getKey();
-                String ip = node.getValue();
-
-                writer.write(name.toString());
-                writer.write(":");
-                writer.write(ip);
+                String line = node.getKey().toString() + "::" + node.getValue();
+                writer.write(line);
                 writer.newLine();
             }
             writer.close();
@@ -70,7 +112,7 @@ public class NodeRepository {
             String line = "";
             while ((line = reader.readLine()) != null) {
                 if (!line.isEmpty())
-                    this.nodes.put(Integer.parseInt(line.split(":")[0]), line.split(":")[1]);
+                    this.nodes.put(Integer.parseInt(line.split("::")[0]), line.split("::")[1]);
             }
             reader.close();
         } catch (IOException e) {
